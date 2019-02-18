@@ -155,3 +155,44 @@ def regularizer_laplacian_commutativity(C, eval_src, eval_tar):
         grad = 2*torch.bmm(C, Mask)
         return fval, grad
 
+
+def convert_functional_map_to_pointwise_map(C12, B1, B2):
+    '''
+    Pointwise map reconstruction
+    :param C12: given functional map C12: S1 -> S2
+    :param B1: the basis of S1
+    :param B2: the basis of S2
+    :return: T21: the pointwise map T21: S2 -> S1
+    '''
+
+
+def convert_pointwise_map_to_funcitonal_map(T12, B1, B2):
+    '''
+    Convert a pointwise map to a functional map
+    :param T12: given pointwise map T12: S1 -> S2
+    :param B1: the basis of S1
+    :param B2: the basis of S2
+    :return: C21: the corresponding functional map C21: S2 -> S1
+    '''
+
+
+def refine_fMap_icp(C12, B1, B2, num_iters=10):
+    '''
+    Regular Iterative Closest Point (ICP) to refine a functional map
+    :param C12: initial functional map from S1 to S2
+    :param B1: the basis of S1
+    :param B2: the basis of S2
+    :param num_iters: the number of iterations for refinement
+    :return: C12_refined, T21_refined
+    '''
+
+
+def refine_pMap_icp(T12, B1, B2, num_iters=10):
+    '''
+    Regular Iterative Closest Point (ICP) to refine a pointwise map
+    :param T12: initial pointwise map from S1 to S2
+    :param B1: the basis of S1
+    :param B2: the basis of S2
+    :param num_iters: the number of iterations for refinement
+    :return: T12_refined, C21_refined
+    '''

@@ -129,6 +129,14 @@ def find_vertex_one_ring_neighbor(S):
     :return: vtx_neigh[i] gives the neighboring vertex ID list of the i-th vtx
     '''
 
+
+def find_edge_list(S):
+    '''
+    Find the edge list and the weight (from the cotangent matrix)
+    :param S: given mesh
+    :return: edge list Elist, and the corresponding weight EdgeWeight
+    '''
+
 # --------------------------------------------------------------------------
 #  functions for constructing orientation operators (by Adrien Poulenard)
 # --------------------------------------------------------------------------
