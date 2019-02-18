@@ -6,7 +6,7 @@ import FunctionalMap as fMap
 import MeshProcess
 from scipy.sparse import csr_matrix, spdiags
 
-DATASET_PATH = 'data/'
+DATASET_PATH = 'FAUST_shapes_off/'
 
 S1 = MESH.mesh_load_and_preprocess(DATASET_PATH + "tr_reg_000.off",
                                    numEigs=50)
