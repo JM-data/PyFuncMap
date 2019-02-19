@@ -1,5 +1,6 @@
 import numpy as np
 import MeshProcess
+from scipy.optimize import minimize
 #import torch
 #DEVICE = torch.device('cuda:0')
 
@@ -187,45 +188,87 @@ def regularizer_operator_commutativity(C, Op_src, Op_tar, IfReversing=False):
         return fval, grad
 
 
-# --------------------------------------------------------------------------
-#  Energy terms in torch
-# --------------------------------------------------------------------------
-# TODO: check
-def regularizer_descriptor_preservation_torch(C, Desc_src, Desc_tar):
+def compute_functional_map_from_descriptors(S1, S2, desc1, desc2, param):
     '''
-    fMap regularizer: preserve the given corresponding descriptors (projected)
-    :param C: functional map : source -> target
-    :param Desc_src: the projected descriptors of the source shape
-    :param Desc_tar: the projected descriptors of the target shape
-    :return: the objective and the gradient of this regularizer
+    Given a pair of shapes and a set of corresponding descriptors, compute a functional map
+    :param S1: the source shape
+    :param S2: the target shape
+    :param desc1: a set of descriptors defined on S1
+    :param desc2: the corresponding descriptors defined on S2
+    :param param: the paramters for functional map optimization
+    :return: a functional map from S1 to S2
     '''
+    k1 = param['fMap_size'][0]
+    k2 = param['fMap_size'][1]
+    weights = np.array([param['weight_descriptor_preservation'],
+                        param['weight_laplacian_commutativity'],
+                        param['weight_descriptor_commutativity'],
+                        param['weight_descriptor_orientation']])
+
+    B1 = S1.evecs[:, 0:k1]
+    B2 = S2.evecs[:, 0:k2]
+    Ev1 = S1.evals[0:k1]
+    Ev2 = S2.evals[0:k2]
+
+    Desc1 = descriptors_projection(desc1, B1, S1.A)
+    Desc2 = descriptors_projection(desc2, B2, S2.A)
+
+    CommOp1 = descriptor_commutativity_operator(desc1, B1, S1.A)
+    CommOp2 = descriptor_commutativity_operator(desc2, B2, S2.A)
+
+    # OrientOp1 = descriptor_orientation_operator(desc1, B1, S1)
+    # OrientOp2 = descriptor_orientation_operator(desc2, B2, S2)
+
+    # Construct the energy function
+
+    funDesc = lambda C: regularizer_descriptor_preservation(C, Desc1, Desc2)[0]
+    gradDesc = lambda C: regularizer_descriptor_preservation(C, Desc1, Desc2)[1]
+
+    funCommLB = lambda C: regularizer_laplacian_commutativity(C, Ev1, Ev2)[0]
+    gradCommLB = lambda C: regularizer_laplacian_commutativity(C, Ev1, Ev2)[1]
+
+    funCommDesc = lambda C: regularizer_operator_commutativity(C, CommOp1, CommOp2)[0]
+    gradCommDesc = lambda C: regularizer_operator_commutativity(C, CommOp1, CommOp2)[1]
+
+    # TODO: it is too slow to compute the orientation operator, comment it for now
+    # funOrient = lambda C: regularizer_operator_commutativity(C, OrientOp1, OrientOp2)[0]
+    # gradOrient = lambda C: regularizer_operator_commutativity(C, OrientOp1, OrientOp2)[1]
+
+    # myObj = lambda C: (weights[0] * funDesc(C) + weights[1] * funCommLB(C) +
+    #                   weights[2] * funCommDesc(C) + weights[3] * funOrient(C))
+    # myGrad = lambda C: (weights[0] * gradDesc(C) + weights[1] * gradCommLB(C) +
+    #                   weights[2] * gradCommDesc(C) + weights[3] * gradOrient(C))
+    myObj = lambda C: (weights[0] * funDesc(C) + weights[1] * funCommLB(C) +
+                       weights[2] * funCommDesc(C))
+    myGrad = lambda C: (weights[0] * gradDesc(C) + weights[1] * gradCommLB(C) +
+                       weights[2] * gradCommDesc(C))
+
+    # the first column of the functional map is determinant (defined by the first Eigenfunctions)
+    constDesc = np.sign(B1[0, 0] * B2[0, 0]) * np.sqrt(np.sum(S2.A) / np.sum(S1.A))
+    first_col_C = np.zeros((k2, 1))
+    first_col_C[0] = constDesc
+
+    # i.e., the 2nd to the k1-th columns are the true variables to optimize
+    myObj_new = lambda Cvar: myObj(np.concatenate((first_col_C, Cvar), axis=1))
+    myGrad_new = lambda Cvar: myGrad(np.concatenate((first_col_C, Cvar), axis=1))[:, 1:k1]
+
+    # vectorize the variable and the corresponding gradient for the solver
+    vec_myObj_new = lambda vec_Cvar: myObj_new(np.reshape(vec_Cvar, (k2, k1 - 1)))
+    vec_myGrad_new = lambda vec_Cvar: np.reshape(myGrad_new(np.reshape(vec_Cvar, (k2, k1 - 1))), (k2 * (k1 - 1), 1))
+
+    # optimization
+    vec_Cvar = np.zeros((k2 * (k1 - 1), 1))
+    res = minimize(vec_myObj_new, vec_Cvar, method='SLSQP',
+                   jac=vec_myGrad_new,
+                   options={'disp': True})
+
+    # reshape the minimum to a matrix
+    Copt = np.reshape(res.x, (k2, k1 - 1))
+    # add the fixed first column back to get the complete functional map
+    Copt_full = np.concatenate((first_col_C, Copt), axis=1)
+    return Copt_full
 
 
-# TODO: check
-def regularizer_laplacian_commutativity_torch(C, eval_src, eval_tar):
-    '''
-    fMap regularizer: Laplacian-Beltrami operator commutativity term
-    :param C: functional map: source -> target (matrix k2-by-k1)
-    :param eval_src: eigenvalues of the source shape (length of k1)
-    :param eval_tar: eigenvalues of the target shape (length of k2)
-    :return: the objective and the gradient of this regularizer
-    '''
-
-
-
-# TODO: check
-def regularizer_operator_commutativity_torch(C, CommOp_src, CommOp_tar):
-    '''
-    fMap regularizer: preserve the descriptor via commutativity
-    :param C: functional map: source -> target
-    :param CommOp_src: a list of desc_commutativity_operators of the source shape
-    :param CommOp_tar: the corresponding desc_comm_op of the target shape
-    :return: the objective and the gradient of this regularizer
-    '''
-
-# --------------------------------------------------------------------------
-#  Energy terms in torch - End
-# --------------------------------------------------------------------------
 
 def convert_functional_map_to_pointwise_map(C12, B1, B2):
     '''
@@ -267,3 +310,44 @@ def refine_pMap_icp(T12, B1, B2, num_iters=10):
     :param num_iters: the number of iterations for refinement
     :return: T12_refined, C21_refined
     '''
+
+
+# --------------------------------------------------------------------------
+#  Energy terms in torch
+# --------------------------------------------------------------------------
+# TODO: check
+def regularizer_descriptor_preservation_torch(C, Desc_src, Desc_tar):
+    '''
+    fMap regularizer: preserve the given corresponding descriptors (projected)
+    :param C: functional map : source -> target
+    :param Desc_src: the projected descriptors of the source shape
+    :param Desc_tar: the projected descriptors of the target shape
+    :return: the objective and the gradient of this regularizer
+    '''
+
+
+# TODO: check
+def regularizer_laplacian_commutativity_torch(C, eval_src, eval_tar):
+    '''
+    fMap regularizer: Laplacian-Beltrami operator commutativity term
+    :param C: functional map: source -> target (matrix k2-by-k1)
+    :param eval_src: eigenvalues of the source shape (length of k1)
+    :param eval_tar: eigenvalues of the target shape (length of k2)
+    :return: the objective and the gradient of this regularizer
+    '''
+
+
+
+# TODO: check
+def regularizer_operator_commutativity_torch(C, CommOp_src, CommOp_tar):
+    '''
+    fMap regularizer: preserve the descriptor via commutativity
+    :param C: functional map: source -> target
+    :param CommOp_src: a list of desc_commutativity_operators of the source shape
+    :param CommOp_tar: the corresponding desc_comm_op of the target shape
+    :return: the objective and the gradient of this regularizer
+    '''
+
+# --------------------------------------------------------------------------
+#  Energy terms in torch - End
+# --------------------------------------------------------------------------

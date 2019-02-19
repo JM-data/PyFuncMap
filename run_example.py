@@ -8,43 +8,28 @@ from scipy.sparse import csr_matrix, spdiags
 
 DATASET_PATH = 'FAUST_shapes_off/'
 
-# Load two meshes
-S1 = MESH.mesh_load_and_preprocess(DATASET_PATH + "tr_reg_000.off",
-                                   numEigs=50)
+s1_name = "tr_reg_000.off"
 
-S2 = MESH.mesh_load_and_preprocess(DATASET_PATH + "tr_reg_001.off",
-                                   numEigs=50)
+s2_name = "tr_reg_001.off"
+
+# Load two meshes
+S1 = MESH.mesh_load_and_preprocess(DATASET_PATH + s1_name, numEigs=50)
+S2 = MESH.mesh_load_and_preprocess(DATASET_PATH + s2_name, numEigs=50)
 
 # compute the wave kernel signatures
 desc1 = fMap.wave_kernel_signature(S1.evecs, S1.evals, S1.A, numTimes=100, ifNormalize=True)
-desc1 = desc1[:, np.arange(0,100,20)]
+desc1 = desc1[:, np.arange(0, 100, 20)]
 desc2 = fMap.wave_kernel_signature(S2.evecs, S2.evals, S2.A, numTimes=100, ifNormalize=True)
-desc2 = desc2[:, np.arange(0,100,20)]
-
-B1 = S1.evecs[:, 0:5]
-B2 = S2.evecs[:, 0:5]
-
-Ev1 = S1.evals[0:5]
-Ev2 = S2.evals[0:5]
+desc2 = desc2[:, np.arange(0, 100, 20)]
 
 
-Desc1 = fMap.descriptors_projection(desc1, B1, S1.A)
-Desc2 = fMap.descriptors_projection(desc2, B2, S2.A)
+param = dict()
+param['fMap_size'] = [10, 10]
+param['weight_descriptor_preservation'] = 1
+param['weight_laplacian_commutativity'] = 1
+param['weight_descriptor_commutativity'] = 1
+param['weight_descriptor_orientation'] = 0
 
 
-
-# CommOp1 = fMap.descriptor_commutativity_operator(desc1, B1, S1.A)
-# CommOp2 = fMap.descriptor_commutativity_operator(desc2, B2, S2.A)
-
-OrientOp1 = fMap.descriptor_orientation_operator(desc1, B1, S1)
-OrientOp2 = fMap.descriptor_orientation_operator(desc2, B2, S2)
-
-
-C = desc1[0:5, 0:5]
-fval, grad = fMap.regularizer_operator_commutativity(C, OrientOp1, OrientOp2, IfReversing=True)
-
-
-
-print(fval)
-print("\n\n")
-print(grad)
+C12 = fMap.compute_functional_map_from_descriptors(S1, S2, desc1, desc2, param)
+print(C12)
