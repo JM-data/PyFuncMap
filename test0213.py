@@ -21,3 +21,6 @@ desc2 = desc2[:, np.arange(0,100,20)]
 
 B1 = S1.evecs
 B2 = S2.evecs
+
+a = np.sum(desc1)
+print(a)
