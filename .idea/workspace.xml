@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2c443bec-3b79-46b8-b907-2f64974270e2" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_example.py" afterPath="$PROJECT_DIR$/run_example.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test0213.py" afterPath="$PROJECT_DIR$/test0213.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/utils/FunctionalMap_torch.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/utils/FunctionalMap.py" afterPath="$PROJECT_DIR$/utils/FunctionalMap.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="test0213.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="test0213.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test0213.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1117">
-              <caret line="61" column="34" lean-forward="false" selection-start-line="61" selection-start-column="34" selection-end-line="61" selection-end-column="34" />
+            <state relative-caret-position="364">
+              <caret line="14" column="32" lean-forward="false" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -77,8 +75,8 @@
       <file leaf-file-name="FunctionalMap.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utils/FunctionalMap.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="467">
-              <caret line="219" column="6" lean-forward="false" selection-start-line="219" selection-start-column="6" selection-end-line="219" selection-end-column="6" />
+            <state relative-caret-position="78">
+              <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -86,14 +84,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="solve_torch.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tmp/solve_torch.py">
+      <file leaf-file-name="FunctionalMap_torch.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/utils/FunctionalMap_torch.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="519">
-              <caret line="27" column="41" lean-forward="true" selection-start-line="27" selection-start-column="41" selection-end-line="27" selection-end-column="41" />
-              <folding>
-                <element signature="e#0#11#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="338">
+              <caret line="13" column="69" lean-forward="true" selection-start-line="13" selection-start-column="69" selection-end-line="13" selection-end-column="69" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -123,8 +119,8 @@
       <file leaf-file-name="MeshProcess.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utils/MeshProcess.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="883">
-              <caret line="287" column="20" lean-forward="true" selection-start-line="287" selection-start-column="20" selection-end-line="287" selection-end-column="20" />
+            <state relative-caret-position="1065">
+              <caret line="262" column="39" lean-forward="false" selection-start-line="262" selection-start-column="26" selection-end-line="262" selection-end-column="39" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -150,8 +146,9 @@
         <option value="$PROJECT_DIR$/utils/MeshProcess.py" />
         <option value="$PROJECT_DIR$/useless.py" />
         <option value="$PROJECT_DIR$/test0213.py" />
-        <option value="$PROJECT_DIR$/utils/FunctionalMap.py" />
         <option value="$PROJECT_DIR$/run_example.py" />
+        <option value="$PROJECT_DIR$/utils/FunctionalMap.py" />
+        <option value="$PROJECT_DIR$/utils/FunctionalMap_torch.py" />
       </list>
     </option>
   </component>
@@ -347,26 +344,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/MESH.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-131">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/MeshProcess.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="883">
-          <caret line="287" column="20" lean-forward="true" selection-start-line="287" selection-start-column="20" selection-end-line="287" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/useless.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -403,10 +380,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/utils/FunctionalMap.py">
+    <entry file="file://$PROJECT_DIR$/test0213.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="467">
-          <caret line="219" column="6" lean-forward="false" selection-start-line="219" selection-start-column="6" selection-end-line="219" selection-end-column="6" />
+        <state relative-caret-position="364">
+          <caret line="14" column="32" lean-forward="false" selection-start-line="14" selection-start-column="32" selection-end-line="14" selection-end-column="32" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -423,13 +400,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test0213.py">
+    <entry file="file://$PROJECT_DIR$/utils/MESH.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1117">
-          <caret line="61" column="34" lean-forward="false" selection-start-line="61" selection-start-column="34" selection-end-line="61" selection-end-column="34" />
+        <state relative-caret-position="-131">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/MeshProcess.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1065">
+          <caret line="262" column="39" lean-forward="false" selection-start-line="262" selection-start-column="26" selection-end-line="262" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/FunctionalMap.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="78">
+          <caret line="3" column="0" lean-forward="false" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/FunctionalMap_torch.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="338">
+          <caret line="13" column="69" lean-forward="true" selection-start-line="13" selection-start-column="69" selection-end-line="13" selection-end-column="69" />
+          <folding />
         </state>
       </provider>
     </entry>
