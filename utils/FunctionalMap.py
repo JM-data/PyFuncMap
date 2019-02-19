@@ -81,12 +81,11 @@ def descriptors_projection(desc, B, A):
     return desc_projected
 
 
-# TODO: check
 def descriptor_commutativity_operator(desc, B, A):
     '''
     Operator construction for descriptor preservation via commutativity
     See paper "Informative Descriptor Preservation via Commutativity for Shape Matching"
-    by Dorian Nogneng and Maks Ovsjanikov
+    by Dorian Nogneng, and Maks Ovsjanikov
     :param desc: a set of NORMALIZED descriptors
     :param B: the basis where the fMap lives in
     :param A: the area matrix of the corresponding shape
@@ -103,11 +102,11 @@ def descriptor_commutativity_operator(desc, B, A):
     return CommOp
 
 
-# TODO: check
 def descriptor_orientation_operator(desc, B, S):
     '''
     Operator construction for orientation preserving/reversing via commutativity
     See paper "Continuous and orientation-preserving correspondence via functional maps"
+    by Jing Ren, Adrien Poulenard, Peter Wonka, and Maks Ovsjanikov
     :param desc: a set of NORMALIZED descriptors
     :param B: the basis where the fMap lives in
     :param S: the mesh where the descriptors computed from
@@ -122,47 +121,6 @@ def descriptor_orientation_operator(desc, B, S):
     return OrientOp
 
 
-
-# TODO: check
-def regularizer_descriptor_preservation(C, Desc_src, Desc_tar):
-    '''
-    fMap regularizer: preserve the given corresponding descriptors (projected)
-    :param C: functional map : source -> target
-    :param Desc_src: the projected descriptors of the source shape
-    :param Desc_tar: the projected descriptors of the target shape
-    :return: the objective and the gradient of this regularizer
-    '''
-    if Desc_src.shape[1] != Desc_tar.shape[1]:
-        return -1
-    else:
-        fval = np.power(np.matmul(C, Desc_src) - Desc_tar, 2)
-        grad = np.matmul(np.matmul(C, Desc_src) - Desc_tar, Desc_src.transpose())
-        return fval, grad
-
-
-# TODO: check
-def regularizer_descriptor_commutativity(C, CommOp_src, CommOp_tar):
-    '''
-    fMap regularizer: preserve the descriptor via commutativity
-    :param C: functional map: source -> target
-    :param CommOp_src: a list of desc_commutativity_operators of the source shape
-    :param CommOp_tar: the corresponding desc_comm_op of the target shape
-    :return: the objective and the gradient of this regularizer
-    '''
-    if len(CommOp_src) != len(CommOp_tar):
-        return -1
-    else:
-        fval = 0
-        grad = np.zeros(C.shape)
-        for i in range(len(CommOp_src)):
-            X = CommOp_src[i]
-            Y = CommOp_tar[i]
-            fval += np.sum(np.power(np.matmul(X, C) - np.matmul(C, Y), 2))
-            grad += 2 * (np.matmul(X.tranpose(), np.matmul(X, C) - np.matmul(C, Y)) -
-                         np.matmul(np.matmul(X, C) - np.matmul(C, Y), Y.transpose()))
-        return fval, grad
-
-# TODO: check
 def regularizer_laplacian_commutativity(C, eval_src, eval_tar):
     '''
     fMap regularizer: Laplacian-Beltrami operator commutativity term
@@ -174,11 +132,58 @@ def regularizer_laplacian_commutativity(C, eval_src, eval_tar):
     if len(eval_tar) != C.shape[0] or len(eval_src) != C.shape[1]:
         return -1
     else:
-        Mask = np.power(np.tile(eval_tar, (1, len(eval_src))) -
-                         np.tile(eval_src.transpose(), (len(eval_tar), 1)), 2)
-        Mask = np.divide(Mask, Mask.pow(2))
-        fval = np.multiply(np.multiply(C, C), Mask)
-        grad = 2 * np.multiply(C, Mask)
+        Mask = np.power(np.tile(eval_tar / np.sum(eval_tar) * np.sum(eval_src), (1, len(eval_src))) -
+                        np.tile(eval_src.transpose() / np.sum(eval_src) * np.sum(eval_tar), (len(eval_tar), 1)), 2)
+        Mask = np.divide(Mask, np.sum(np.power(Mask, 2)))
+        fval = 0.5 * np.sum(np.multiply(np.multiply(C, C), Mask))
+        grad = np.multiply(C, Mask)
+        return fval, grad
+
+
+def regularizer_descriptor_preservation(C, Desc_src, Desc_tar):
+    '''
+    fMap regularizer: preserve the given corresponding descriptors (projected)
+    :param C: functional map : source -> target
+    :param Desc_src: the projected descriptors of the source shape
+    :param Desc_tar: the projected descriptors of the target shape
+    :return: the objective and the gradient of this regularizer
+    '''
+    if Desc_src.shape[1] != Desc_tar.shape[1]:
+        return -1
+    else:
+        fval = 0.5 * np.sum(np.power(np.matmul(C, Desc_src) - Desc_tar, 2))
+        grad = np.matmul(np.matmul(C, Desc_src) - Desc_tar, Desc_src.transpose())
+        return fval, grad
+
+
+def regularizer_operator_commutativity(C, Op_src, Op_tar, IfReversing=False):
+    '''
+    fMap regularizer: preserve the operators via commutativity
+    the operators can be:
+    - descriptor commutativity operator
+    - orientation-preserving operator
+    :param C: functional map: source -> target
+    :param Op_src: a list of operators on the source shape
+    :param Op_tar: the corresponding operators on the target shape
+    :param IfReversing: if reversing the commutativity sign - used in orientation-reversing setting
+    :return: the objective and the gradient of this regularizer
+    '''
+    if len(Op_src) != len(Op_tar):
+        return -1
+    else:
+        fval = 0
+        grad = np.zeros(C.shape)
+        for i in range(len(Op_src)):
+            X = Op_tar[i]
+            Y = Op_src[i]
+            if not IfReversing:
+                fval += 0.5 * np.sum(np.power(np.matmul(X, C) - np.matmul(C, Y), 2))
+                grad += (np.matmul(X.transpose(), np.matmul(X, C) - np.matmul(C, Y)) -
+                         np.matmul(np.matmul(X, C) - np.matmul(C, Y), Y.transpose()))
+            else: # used for orientation-reversing setting only!
+                fval += 0.5 * np.sum(np.power(np.matmul(X, C) + np.matmul(C, Y), 2))
+                grad += (np.matmul(X.transpose(), np.matmul(X, C) + np.matmul(C, Y)) +
+                         np.matmul(np.matmul(X, C) + np.matmul(C, Y), Y.transpose()))
         return fval, grad
 
 
@@ -194,35 +199,6 @@ def regularizer_descriptor_preservation_torch(C, Desc_src, Desc_tar):
     :param Desc_tar: the projected descriptors of the target shape
     :return: the objective and the gradient of this regularizer
     '''
-    if Desc_src.shape[1] != Desc_tar.shape[1]:
-        return -1
-    else:
-        fval = (torch.mm(C, Desc_src) - Desc_tar).pow(2).sum()
-        grad = torch.mm(torch.mm(C, Desc_src) - Desc_tar, Desc_src.transpose())
-        return fval, grad
-
-
-# TODO: check
-def regularizer_descriptor_commutativity_torch(C, CommOp_src, CommOp_tar):
-    '''
-    fMap regularizer: preserve the descriptor via commutativity
-    :param C: functional map: source -> target
-    :param CommOp_src: a list of desc_commutativity_operators of the source shape
-    :param CommOp_tar: the corresponding desc_comm_op of the target shape
-    :return: the objective and the gradient of this regularizer
-    '''
-    if len(CommOp_src) != len(CommOp_tar):
-        return -1
-    else:
-        fval = 0
-        grad = torch.zeros(C.shape)
-        for i in range(len(CommOp_src)):
-            X = CommOp_src[i]
-            Y = CommOp_tar[i]
-            fval += (torch.mm(X, C) - torch.mm(C, Y)).pow(2).sum()
-            grad += 2*(torch.mm(X.tranpose(), torch.mm(X, C) - torch.mm(C, Y)) -
-                     torch.mm(torch.mm(X, C) - torch.mm(C, Y), Y.transpose()))
-        return fval, grad
 
 
 # TODO: check
@@ -234,15 +210,18 @@ def regularizer_laplacian_commutativity_torch(C, eval_src, eval_tar):
     :param eval_tar: eigenvalues of the target shape (length of k2)
     :return: the objective and the gradient of this regularizer
     '''
-    if len(eval_tar) != C.shape[0] or len(eval_src) != C.shape[1]:
-        return -1
-    else:
-        Mask = np.power(np.tile(eval_tar, (1, len(eval_src))) -
-                        np.tile(eval_src.transpose(), (len(eval_tar),1)),2)
-        Mask = torch.div(Mask, Mask.pow(2))
-        fval = torch.bmm(torch.bmm(C, C), Mask)
-        grad = 2*torch.bmm(C, Mask)
-        return fval, grad
+
+
+
+# TODO: check
+def regularizer_operator_commutativity_torch(C, CommOp_src, CommOp_tar):
+    '''
+    fMap regularizer: preserve the descriptor via commutativity
+    :param C: functional map: source -> target
+    :param CommOp_src: a list of desc_commutativity_operators of the source shape
+    :param CommOp_tar: the corresponding desc_comm_op of the target shape
+    :return: the objective and the gradient of this regularizer
+    '''
 
 # --------------------------------------------------------------------------
 #  Energy terms in torch - End

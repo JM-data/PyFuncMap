@@ -285,17 +285,19 @@ def compute_orientation_operator_from_a_descriptor(S, B, f):
     norm_grad = np.divide(grad_f, tmp)
 
     # rotate the gradient by pi/2
-    rot_norm_grad = -np.cross(Nf, norm_grad)
+    rot_norm_grad = np.cross(Nf, norm_grad)
+
+    # TODO: check which operator should be used
+    # Op = vector_field_to_operator(S, norm_grad)
+    # diff_Op = np.matmul(B.transpose(), np.matmul(S.A.toarray(), np.matmul(Op, B)))
 
     # convert vector field to operators
-    Op = vector_field_to_operator(S, norm_grad)
     Op_rot = vector_field_to_operator(S, rot_norm_grad)
 
     # create 1st order differential operators associated with the vector fields
-    diff_Op = np.matmul(B.transpose(), np.matmul(S.A.toarray(), np.matmul(Op, B)))
     diff_Op_rot = np.matmul(B.transpose(), np.matmul(S.A.toarray(), np.matmul(Op_rot, B)))
-    # TODO: check which operator should be used
-    return diff_Op_rot, diff_Op
+
+    return diff_Op_rot
 
 # --------------------------------------------------------------------------
 #  functions for constructing orientation operators  - End
