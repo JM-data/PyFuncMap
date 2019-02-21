@@ -6,6 +6,8 @@ import FunctionalMap as fMap
 import MeshProcess
 from scipy.sparse import csr_matrix, spdiags
 
+from scipy import spatial
+
 DATASET_PATH = 'FAUST_shapes_off/'
 
 s1_name = "tr_reg_000.off"
@@ -32,4 +34,14 @@ param['weight_descriptor_orientation'] = 0
 
 
 C12 = fMap.compute_functional_map_from_descriptors(S1, S2, desc1, desc2, param)
-print(C12)
+
+B1 = S1.evecs[:, 0:param['fMap_size'][0]]
+B2 = S2.evecs[:, 0:param['fMap_size'][1]]
+
+
+
+T21 = fMap.convert_functional_map_to_pointwise_map(C12, B1, B2)
+
+C12_new = np.linalg.lstsq(B2, B1[T21, :], rcond=None)[0]
+T21_new = fMap.convert_functional_map_to_pointwise_map(C12_new, B1, B2)
+print(T21_new[0:15])

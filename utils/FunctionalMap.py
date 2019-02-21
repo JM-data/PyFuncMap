@@ -1,7 +1,7 @@
 import numpy as np
 import MeshProcess
 from scipy.optimize import minimize
-
+from scipy import spatial
 
 
 def heat_kernel_signature(evecs, evals, A, numTimes, ifNormalize=True):
@@ -275,9 +275,13 @@ def convert_functional_map_to_pointwise_map(C12, B1, B2):
     :param C12: given functional map C12: S1 -> S2
     :param B1: the basis of S1
     :param B2: the basis of S2
-    :return: T21: the pointwise map T21: S2 -> S1
+    :return: T21: the pointwise map T21: S2 -> S1 (index 0-based)
     '''
-
+    if C12.shape[0] != B2.shape[1] or C12.shape[1] != B1.shape[1]:
+        return -1
+    else:
+        _, T21 = spatial.cKDTree(np.matmul(B1, C12.transpose())).query(B2)
+        return T21
 
 def convert_pointwise_map_to_funcitonal_map(T12, B1, B2):
     '''
@@ -287,7 +291,8 @@ def convert_pointwise_map_to_funcitonal_map(T12, B1, B2):
     :param B2: the basis of S2
     :return: C21: the corresponding functional map C21: S2 -> S1
     '''
-
+    C21 = np.linalg.lstsq(B1, B2[T12, :], rcond=None)[0]
+    return C21
 
 def refine_fMap_icp(C12, B1, B2, num_iters=10):
     '''
@@ -298,6 +303,14 @@ def refine_fMap_icp(C12, B1, B2, num_iters=10):
     :param num_iters: the number of iterations for refinement
     :return: C12_refined, T21_refined
     '''
+    if C12.shape[0] != B2.shape[1] or C12.shape[1] != B1.shape[1]:
+        return -1
+    else:
+        C12_refined = C12
+        for i in range(num_iters):
+            T21_refined = convert_functional_map_to_pointwise_map(C12_refined, B1, B2)
+            C12_refined = convert_pointwise_map_to_funcitonal_map(T21_refined, B2, B1)
+        return C12_refined, T21_refined
 
 
 def refine_pMap_icp(T12, B1, B2, num_iters=10):
@@ -309,4 +322,8 @@ def refine_pMap_icp(T12, B1, B2, num_iters=10):
     :param num_iters: the number of iterations for refinement
     :return: T12_refined, C21_refined
     '''
-
+    T12_refined = T12
+    for i in range(num_iters):
+        C21_refined = convert_pointwise_map_to_funcitonal_map(T12_refined, B1, B2)
+        T12_refined = convert_functional_map_to_pointwise_map(C21_refined, B2, B1)
+    return T12_refined, C21_refined

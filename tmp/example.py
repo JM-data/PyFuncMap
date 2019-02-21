@@ -7,7 +7,6 @@ mpl.use('TkAgg')  # or whatever other backend that you want
 import matplotlib.pyplot as plt
 import time
 
-
 from extra import *
 from solve_torch import *
 
