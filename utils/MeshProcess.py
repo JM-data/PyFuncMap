@@ -160,6 +160,14 @@ def compute_face_area(S):
     Ar = 0.5 * np.sum(np.power(np.cross(V1 - V2, V1 - V3), 2), axis=1)  # todo - MATLAB version
     return Ar
 
+def compute_mesh_surface_area(S):
+    '''
+    Compute the surface area of a mesh
+    :param S: given mesh
+    :return: surface area
+    '''
+    return sum(compute_face_area(S))
+
 
 def mass_matrix(S):
     '''

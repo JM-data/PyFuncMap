@@ -294,6 +294,7 @@ def convert_pointwise_map_to_funcitonal_map(T12, B1, B2):
     C21 = np.linalg.lstsq(B1, B2[T12, :], rcond=None)[0]
     return C21
 
+# TODO: add projection to C12
 def refine_fMap_icp(C12, B1, B2, num_iters=10):
     '''
     Regular Iterative Closest Point (ICP) to refine a functional map
@@ -312,7 +313,7 @@ def refine_fMap_icp(C12, B1, B2, num_iters=10):
             C12_refined = convert_pointwise_map_to_funcitonal_map(T21_refined, B2, B1)
         return C12_refined, T21_refined
 
-
+# TODO: add projection to C21
 def refine_pMap_icp(T12, B1, B2, num_iters=10):
     '''
     Regular Iterative Closest Point (ICP) to refine a pointwise map
