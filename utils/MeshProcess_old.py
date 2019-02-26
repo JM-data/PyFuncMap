@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.sparse import csr_matrix, spdiags
-import time
+
 
 def cotangent_laplacian(S):
     '''
@@ -268,8 +268,8 @@ def vector_field_to_operator(S, Vf):
     W = csr_matrix((Sn, (In, Jn)), [S.nv, S.nv])
     M = mass_matrix(S)
     tmp = spdiags(np.divide(1, np.sum(M, axis=1)).T, 0, S.nv, S.nv)
-    
-    op = tmp @ W
+    # TODO: sparse matrix muliplication - faster one??
+    op = np.matmul(tmp.toarray(), W.toarray())
     return op
 
 
@@ -303,7 +303,7 @@ def compute_orientation_operator_from_a_descriptor(S, B, f):
     Op_rot = vector_field_to_operator(S, rot_norm_grad)
 
     # create 1st order differential operators associated with the vector fields
-    diff_Op_rot = np.matmul(B.transpose(), np.matmul(S.A.toarray(), Op_rot @ B))
+    diff_Op_rot = np.matmul(B.transpose(), np.matmul(S.A.toarray(), np.matmul(Op_rot, B)))
 
     return diff_Op_rot
 
