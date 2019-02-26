@@ -2,7 +2,7 @@ import numpy as np
 import MeshProcess
 from scipy.optimize import minimize
 from scipy import spatial
-import time
+
 
 def heat_kernel_signature(evecs, evals, A, numTimes, ifNormalize=True):
     '''
@@ -215,8 +215,8 @@ def compute_functional_map_from_descriptors(S1, S2, desc1, desc2, param):
     CommOp1 = descriptor_commutativity_operator(desc1, B1, S1.A)
     CommOp2 = descriptor_commutativity_operator(desc2, B2, S2.A)
 
-    OrientOp1 = descriptor_orientation_operator(desc1, B1, S1)
-    OrientOp2 = descriptor_orientation_operator(desc2, B2, S2)
+    # OrientOp1 = descriptor_orientation_operator(desc1, B1, S1)
+    # OrientOp2 = descriptor_orientation_operator(desc2, B2, S2)
 
     # Construct the energy function
 
@@ -229,13 +229,18 @@ def compute_functional_map_from_descriptors(S1, S2, desc1, desc2, param):
     funCommDesc = lambda C: regularizer_operator_commutativity(C, CommOp1, CommOp2)[0]
     gradCommDesc = lambda C: regularizer_operator_commutativity(C, CommOp1, CommOp2)[1]
 
-    funOrient = lambda C: regularizer_operator_commutativity(C, OrientOp1, OrientOp2)[0]
-    gradOrient = lambda C: regularizer_operator_commutativity(C, OrientOp1, OrientOp2)[1]
+    # TODO: it is too slow to compute the orientation operator, comment it for now
+    # funOrient = lambda C: regularizer_operator_commutativity(C, OrientOp1, OrientOp2)[0]
+    # gradOrient = lambda C: regularizer_operator_commutativity(C, OrientOp1, OrientOp2)[1]
 
+    # myObj = lambda C: (weights[0] * funDesc(C) + weights[1] * funCommLB(C) +
+    #                   weights[2] * funCommDesc(C) + weights[3] * funOrient(C))
+    # myGrad = lambda C: (weights[0] * gradDesc(C) + weights[1] * gradCommLB(C) +
+    #                   weights[2] * gradCommDesc(C) + weights[3] * gradOrient(C))
     myObj = lambda C: (weights[0] * funDesc(C) + weights[1] * funCommLB(C) +
-                       weights[2] * funCommDesc(C) + weights[3] * funOrient(C))
+                       weights[2] * funCommDesc(C))
     myGrad = lambda C: (weights[0] * gradDesc(C) + weights[1] * gradCommLB(C) +
-                       weights[2] * gradCommDesc(C) + weights[3] * gradOrient(C))
+                       weights[2] * gradCommDesc(C))
 
     # the first column of the functional map is determinant (defined by the first Eigenfunctions)
     constDesc = np.sign(B1[0, 0] * B2[0, 0]) * np.sqrt(np.sum(S2.A) / np.sum(S1.A))
@@ -252,12 +257,10 @@ def compute_functional_map_from_descriptors(S1, S2, desc1, desc2, param):
 
     # optimization
     vec_Cvar = np.zeros((k2 * (k1 - 1), 1))
-    t_opt = time.time()
-    print("Starting Functional Map Optimization...")
-    res = minimize(vec_myObj_new, vec_Cvar, method='L-BFGS-B',
+    res = minimize(vec_myObj_new, vec_Cvar, method='SLSQP',
                    jac=vec_myGrad_new,
-                   options={'disp': False})
-    print("Optimization done in : %.2fs" % (time.time()-t_opt))
+                   options={'disp': True})
+
     # reshape the minimum to a matrix
     Copt = np.reshape(res.x, (k2, k1 - 1))
     # add the fixed first column back to get the complete functional map
@@ -277,7 +280,7 @@ def convert_functional_map_to_pointwise_map(C12, B1, B2):
     if C12.shape[0] != B2.shape[1] or C12.shape[1] != B1.shape[1]:
         return -1
     else:
-        _, T21 = spatial.cKDTree(np.matmul(B1, C12.transpose())).query(B2, n_jobs=-1)
+        _, T21 = spatial.cKDTree(np.matmul(B1, C12.transpose())).query(B2)
         return T21
 
 def convert_pointwise_map_to_funcitonal_map(T12, B1, B2):
